@@ -4,7 +4,7 @@ export const horariosCrossfit = [
   },
   {
     lunes: {
-      "07:00": Array(16).fill(true),
+      "07:00": [false, false, false],
       "08:00": Array(16).fill(true),
       "09:00": Array(16).fill(true),
       "10:00": Array(16).fill(true),

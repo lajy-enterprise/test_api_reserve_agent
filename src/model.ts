@@ -1,7 +1,7 @@
-import { createTaskTool, reserveTurnToCrossfit } from "./tools";
+import { reserveTurnToCrossfit, consultDisponibilidad } from "./tools";
 import { ChatOpenAI } from "@langchain/openai";
 
-const tools = [createTaskTool, reserveTurnToCrossfit];
+const tools = [reserveTurnToCrossfit, consultDisponibilidad];
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 

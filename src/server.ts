@@ -1,5 +1,7 @@
 import { Elysia, t } from "elysia";
 import express from "express";
+import { userRouter } from "./routes/user.route";
+import { reserveRouter } from "./routes/reserve.route";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { v4 as uuidv4 } from "uuid";
@@ -14,6 +16,9 @@ serverExpress.use(
 );
 serverExpress.use(bodyParser.json());
 // serverExpress.use(bodyParser.urlencoded({ extended: false }));
+serverExpress.use("/user", userRouter);
+serverExpress.use("/reserve", reserveRouter);
+
 serverExpress.post("/event", async (req, res) => {
   const { message, threadId } = req.body;
   const headers = {

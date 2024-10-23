@@ -1,5 +1,5 @@
 import axios from "axios";
-import { object, z } from "zod";
+import { z } from "zod";
 import { tool } from "@langchain/core/tools";
 import { horariosCrossfit } from "./mockup_grilla_horaria/mockup_grilla";
 
@@ -77,16 +77,18 @@ export const reserveTurnToCrossfit = tool(
       });
     }
 
-    if (response === "") {
-      return `El turno ${turn} no está disponible, por favor elige otro`;
-    } else {
-      return response;
-    }
+    return response;
+    // return `Turno reservado para ${nombre} con DNI ${dni} a las ${turn}`;
+    // if (response === "") {
+    //   return `El turno ${turn} no está disponible, por favor elige otro`;
+    // } else {
+    //   return response;
+    // }
   },
   {
     name: "reservacion_de_turno_para_crossfit",
     description:
-      "Reserva un nuevo turno para la clase de crossfit, debe proveer nombre, dni y turno",
+      "LLamar despues de haber consultado disponibilidad para reserva un nuevo turno para la clase, debe proveer nombre, dni y turno",
     schema: z.object({
       nombre: z
         .string()
@@ -103,16 +105,6 @@ export const reserveTurnToCrossfit = tool(
   }
 );
 
-export const search = tool(
-  (_) => {
-    return "Hay sol en la plata, ve por la sombra";
-  },
-  {
-    name: "search",
-    description: "Llama para navegar por la web.",
-    schema: z.string(),
-  }
-);
 const semana = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 const activities = [
   "crossfit",
@@ -124,6 +116,7 @@ const activities = [
 ];
 
 const grilla = [horariosCrossfit];
+
 export const consultDisponibilidad = tool(
   ({ day, activityQuery }: { day: string; activityQuery: string }) => {
     if (!semana.includes(day)) {
@@ -132,28 +125,82 @@ export const consultDisponibilidad = tool(
     if (!activities.some((activity) => activity.includes(activityQuery))) {
       return "La actividad ingresada no es válida, por favor ingrese una actividad válida como crossfit, full body, functional, fit box, woman strong, high intensity";
     }
-
-    const isDisponible = grilla.map((week) => {
+    let isDisponible: any = [];
+    grilla.map((week) => {
       if (week[0]?.activity?.includes(activityQuery)) {
-        const horarios: { [key: string]: { [key: string]: string[] } } =
+        const horarios: { [key: string]: { [key: string]: any[] } } =
           week[1] as any;
         const dayOfWeek = horarios[day];
+        let hourDisponibles = [];
         for (const hour in dayOfWeek) {
-          const isDisponible = dayOfWeek[hour].some((turno) => turno);
-          if (isDisponible) {
-            return "Hay Disponibilidad en el horario " + hour;
-          }
+          const isDisponibleTurn = dayOfWeek[hour].some((turno) => turno);
+          hourDisponibles.push({ [hour]: isDisponibleTurn });
         }
-        return "No hay disponibilidad en el día seleccionado";
+        isDisponible = [...hourDisponibles];
         // Add your logic here
       }
     });
 
-    return isDisponible;
+    // if (isDisponible) {
+    //   return `Hay turnos disponibles para ${activityQuery} el día ${day}`;
+    // } else {
+    //   return `No hay turnos disponibles para ${activityQuery} el día ${day}`;
+    // }
+    console.log({ respuesta: isDisponible });
+
+    return JSON.stringify(isDisponible);
   },
   {
-    name: "crea_el_detalle_de_la_consulta",
+    name: "consulta_disponibilidad_de_turno",
     description:
-      "Crea el detalle de la consulta del usuario, para buscar disponibilidad de turnos en base a la actividad y el día",
+      "Consulta la disponibilidad de un turno para una actividad en un día de la semana cuando el usuario quiere reservar un turno",
+    schema: z.object({
+      day: z.string().describe("El día de la semana que quieres consultar"),
+      activityQuery: z
+        .string()
+        .describe("La actividad que quieres consultar disponibilidad"),
+    }),
+  }
+);
+
+// Tool para reservar un turno por usuario apunta a un endpoint
+
+export const addReserveTurnTool = tool(
+  async ({ userId, day, hour, activiy }) => {
+    try {
+      const response = await fetch(
+        "https://localhost:3000/reserve/addReserve",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            day,
+            hour,
+            activiy,
+          }),
+        }
+      );
+
+      if (response.status === 200) {
+        const { message, id } = await response.json();
+        return { message, id };
+      }
+      return "Reserva creada con éxito";
+    } catch (error) {
+      return { error: error, message: "Error al crear la reserva" };
+    }
+  },
+  {
+    name: "addReserveTurn",
+    description: "Reservar un turno para el usuario con dia, hora y actividad",
+    schema: z.object({
+      userId: z.string().describe("El id del usuario que quiere reservar"),
+      day: z.string().describe("El día de la semana que quieres reservar"),
+      hour: z.string().describe("La hora que quieres reservar"),
+      activiy: z.string().describe("La actividad que quieres reservar"),
+    }),
   }
 );

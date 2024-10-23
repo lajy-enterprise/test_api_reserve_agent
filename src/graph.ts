@@ -14,13 +14,15 @@ const toolNodeForGraph = new ToolNode(tools);
 async function callModel(state: typeof StateAnnotation.State) {
   const messages = state.messages;
   const systemsMessage = new SystemMessage(
-    "Eres un poderoso asistente que reserva turnos para un gimnasio, recibes la solicitud del usuario, la procesas, para resolverla tienes varias herramientas a tu disposición, por ejemplo, consultar disponibilidad de turnos, reservar el turno, etc. contesta de manera adecuada a la solicitud del usuario."
+    "Eres un poderoso asistente que reserva turnos para un gimnasio, recibes la solicitud del usuario, la procesas, para resolverla tienes varias herramientas a tu disposición; en primer lugar consultas la disponibilidad, y en base a ello continuas con la reserva del turno. "
   );
   const response = await modelWithTools.invoke([systemsMessage, ...messages]);
 
   // We return a list, because this will get added to the existing list
   return { messages: [response] };
 }
+
+// function callConsultaDisponibilidad
 
 function checkToolCall(state: typeof StateAnnotation.State) {
   const messages = state.messages;
