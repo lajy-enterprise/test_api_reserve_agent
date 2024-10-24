@@ -62,22 +62,28 @@ export const createTaskTool = tool(
 );
 
 export const reserveTurnToCrossfit = tool(
-  ({ nombre, dni, turn }) => {
-    const turnos_disponibles: { [key: string]: string[] } = {
-      lunes: ["10:00", "11:00", "12:00"],
-      martes: ["10:00", "11:00", "12:00"],
-    };
-    let response = "";
-    for (const turno in turnos_disponibles) {
-      turnos_disponibles[turno].forEach((element: string) => {
-        if (element === turn) {
-          response = `Turno reservado para ${nombre} con DNI ${dni} el día ${turno} a las ${turn}`;
-          return;
-        }
+  async ({ dia, dni, hora, activity }) => {
+    try {
+      const response = await fetch("http://localhost:3000/reserve/addReserve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          day: dia,
+          userId: dni,
+          hour: hora,
+        }),
       });
+
+      if (response.status === 200) {
+        const { message } = await response.json();
+        return { message };
+      }
+    } catch (error) {
+      return { error: error, message: "Error al crear la reserva" };
     }
 
-    return response;
     // return `Turno reservado para ${nombre} con DNI ${dni} a las ${turn}`;
     // if (response === "") {
     //   return `El turno ${turn} no está disponible, por favor elige otro`;
@@ -88,18 +94,17 @@ export const reserveTurnToCrossfit = tool(
   {
     name: "reservacion_de_turno_para_crossfit",
     description:
-      "LLamar despues de haber consultado disponibilidad para reserva un nuevo turno para la clase, debe proveer nombre, dni y turno",
+      "LLamar despues de haber consultado disponibilidad para reserva un nuevo turno para la clase, debe proveer dia, dni y hora",
     schema: z.object({
-      nombre: z
-        .string()
-        .describe("El nombre de la persona que quiere reservar el turno"),
+      dia: z.string().describe("El día de la semana que quieres reservar"),
       dni: z
         .string()
         .describe("El dni de la persona que quiere reservar el turno"),
-      turn: z
+      activity: z.string().describe("La actividad que quieres reservar"),
+      hora: z
         .string()
         .describe(
-          "El turno que quiere reservar, el formato es del tipo hh:mm , no es válido otro formato, siempre hora en punto"
+          "la hora del turno que quiere reservar, el formato es del tipo hh:mm , no es válido otro formato, siempre hora en punto"
         ),
     }),
   }
@@ -117,12 +122,17 @@ const activities = [
 
 const grilla = [horariosCrossfit];
 
+// Esta consulta deberia ser bien estructurada para hacerla en la base de datos
 export const consultDisponibilidad = tool(
   ({ day, activityQuery }: { day: string; activityQuery: string }) => {
     if (!semana.includes(day)) {
       return "El día ingresado no es válido, por favor ingrese un día de la semana de lunes a viernes";
     }
-    if (!activities.some((activity) => activity.includes(activityQuery))) {
+    if (
+      !activities.some((activity) =>
+        activity.toLowerCase().includes(activityQuery.toLowerCase())
+      )
+    ) {
       return "La actividad ingresada no es válida, por favor ingrese una actividad válida como crossfit, full body, functional, fit box, woman strong, high intensity";
     }
     let isDisponible: any = [];
@@ -166,23 +176,20 @@ export const consultDisponibilidad = tool(
 // Tool para reservar un turno por usuario apunta a un endpoint
 
 export const addReserveTurnTool = tool(
-  async ({ userId, day, hour, activiy }) => {
+  async ({ dni, dia, hora, activity }) => {
     try {
-      const response = await fetch(
-        "https://localhost:3000/reserve/addReserve",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            day,
-            hour,
-            activiy,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:3000/reserve/addReserve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: dni,
+          day: dia,
+          hour: hora,
+          activity,
+        }),
+      });
 
       if (response.status === 200) {
         const { message, id } = await response.json();
@@ -195,12 +202,16 @@ export const addReserveTurnTool = tool(
   },
   {
     name: "addReserveTurn",
-    description: "Reservar un turno para el usuario con dia, hora y actividad",
+    description:
+      "Reservar un turno para el usuario con dia, hora y actividad, llamar a esta funcion luego de haber consultado disponibilidad",
     schema: z.object({
-      userId: z.string().describe("El id del usuario que quiere reservar"),
-      day: z.string().describe("El día de la semana que quieres reservar"),
-      hour: z.string().describe("La hora que quieres reservar"),
-      activiy: z.string().describe("La actividad que quieres reservar"),
+      dni: z
+        .string()
+        .length(8)
+        .describe("El id del usuario que quiere reservar"),
+      dia: z.string().describe("El día de la semana que quieres reservar"),
+      hora: z.string().describe("La hora que quieres reservar"),
+      activity: z.string().describe("La actividad que quieres reservar"),
     }),
   }
 );

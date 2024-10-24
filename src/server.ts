@@ -5,7 +5,7 @@ import { reserveRouter } from "./routes/reserve.route";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { v4 as uuidv4 } from "uuid";
-import { app, graph } from "./graph";
+import { app } from "./graph";
 import { HumanMessage, ToolMessage } from "@langchain/core/messages";
 
 const serverExpress = express();
@@ -47,9 +47,7 @@ serverExpress.post("/event", async (req, res) => {
       console.log("--------------------");
 
       if (recentMsg._getType() === "ai") {
-        if (
-          recentMsg.tool_calls[0]?.name === "reservacion_de_turno_para_crossfit"
-        ) {
+        if (recentMsg.tool_calls[0]?.name === "addReserveTurn") {
           recentMsg.tool_calls[0].args.confirm = true;
           res.write(JSON.stringify(recentMsg.tool_calls[0].args));
         }
@@ -74,9 +72,7 @@ serverExpress.post("/event", async (req, res) => {
       console.log("--------------------");
 
       if (recentMsg._getType() === "ai") {
-        if (
-          recentMsg.tool_calls[0]?.name === "reservacion_de_turno_para_crossfit"
-        ) {
+        if (recentMsg.tool_calls[0]?.name === "addReserveTurn") {
           recentMsg.tool_calls[0].args.confirm = true;
           res.write(JSON.stringify(recentMsg.tool_calls[0].args));
         }
@@ -134,12 +130,19 @@ serverExpress.post("/event", async (req, res) => {
 });
 
 serverExpress.post("/validate", async (req, res) => {
-  const { send, threadId } = req.body;
+  const { send, threadId, args } = req.body;
   const config = {
     configurable: { thread_id: threadId },
     streamMode: "values" as const,
   };
   if (send) {
+    await app.updateState(config, { resrveDetails: args });
+    const currentState = await app.getState(config);
+    console.log("----------------------");
+
+    console.log("Current State: " + JSON.stringify(currentState.values));
+    console.log("----------------------");
+
     for await (const event of await app.stream(null, config)) {
       console.log(event.messages[event.messages.length - 1]);
       const recentMsg = event.messages[event.messages.length - 1];

@@ -3,7 +3,7 @@
   "module": "src",
   "type": "module",
   "scripts": {
-    "test": "bun --watch src/test.ts",
+    "test": "bun --watch src/server.ts",
     "start": "bun src/server.ts",
     "dev": "bun --watch src/main.ts",
     "lint": "biome check .",
