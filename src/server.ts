@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { app } from "./graph";
 import { HumanMessage } from "@langchain/core/messages";
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const serverExpress = express();
 serverExpress.use(
