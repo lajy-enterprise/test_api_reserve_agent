@@ -1,4 +1,4 @@
-import { NodeInterrupt, StateGraph } from "@langchain/langgraph";
+import { StateGraph } from "@langchain/langgraph";
 import StateAnnotation from "./state";
 import { modelWithTools } from "./model";
 import { MemorySaver } from "@langchain/langgraph";
@@ -6,13 +6,12 @@ import { AIMessage, SystemMessage } from "@langchain/core/messages";
 import { consultDisponibilidad, addReserveTurnTool } from "./tools";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 
-// export const graph = new StateGraph(StateAnnotation).compile();
-
 const tools = [consultDisponibilidad, addReserveTurnTool];
 const toolNodeForGraph = new ToolNode(tools);
 
 async function callModel(state: typeof StateAnnotation.State) {
-  const messages = state.messages;
+  const { messages } = state;
+
   const systemsMessage = new SystemMessage(
     "Eres un poderoso asistente que reserva turnos para un gimnasio, recibes la solicitud del usuario, la procesas, para resolverla tienes varias herramientas a tu disposición; en primer lugar consultas la disponibilidad, y en base a ello continuas con la reserva del turno. "
   );
@@ -27,29 +26,45 @@ async function callModel(state: typeof StateAnnotation.State) {
 
 function checkToolCall(state: typeof StateAnnotation.State) {
   const { messages } = state;
+
   const lastMessage = messages[messages.length - 1] as AIMessage;
   // If the LLM makes a tool call, then we route to the "tools" node
-  if (lastMessage.tool_calls?.length) {
-    return "tools";
+  if (lastMessage?.tool_calls?.length) {
+    if (
+      lastMessage?.tool_calls.some(
+        (toolCall) => toolCall.name === "consulta_disponibilidad_de_turno"
+      )
+    ) {
+      return "check_disponibilidad";
+    } else {
+      return "tools";
+    }
   }
-  // Otherwise, we stop (reply to the user)
   return "__end__";
+  // Otherwise, we stop (reply to the user)
 }
 
-// Agregar datos de la reserva al estado cuando se confirma
-// const confirmReserve = (state: typeof StateAnnotation.State) => {};
+function checkCall(state: typeof StateAnnotation.State) {}
+// Otherwise, we stop (reply to the user)
 
 const workflow = new StateGraph(StateAnnotation)
   .addNode("agent", callModel)
+  .addNode("check_disponibilidad", toolNodeForGraph)
+
   .addNode("tools", toolNodeForGraph)
   .addEdge("__start__", "agent")
+  .addConditionalEdges("agent", checkToolCall, [
+    "tools",
+    "check_disponibilidad",
+    "__end__",
+  ])
 
-  .addConditionalEdges("agent", checkToolCall, ["tools", "__end__"])
+  .addEdge("check_disponibilidad", "agent")
   .addEdge("tools", "agent");
 
 const checkpointer = new MemorySaver();
 
 export const app = workflow.compile({
   checkpointer,
-  // interruptBefore: ["tools"],
+  interruptBefore: ["tools"],
 });

@@ -1,8 +1,4 @@
-import {
-  reserveTurnToCrossfit,
-  addReserveTurnTool,
-  consultDisponibilidad,
-} from "./tools";
+import { addReserveTurnTool, consultDisponibilidad } from "./tools";
 import { ChatOpenAI } from "@langchain/openai";
 
 const tools = [addReserveTurnTool, consultDisponibilidad];

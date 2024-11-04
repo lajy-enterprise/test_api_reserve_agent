@@ -6,7 +6,8 @@ const StateAnnotation = Annotation.Root({
   messages: Annotation<BaseMessage[]>({
     reducer: (x, y): BaseMessage[] => x.concat(y),
   }),
-  reserveDetails: Annotation<Reserve>,
+  confirm: Annotation<Boolean>,
+  // reserveDetails: Annotation<Reserve>,
 });
 
 export default StateAnnotation;
