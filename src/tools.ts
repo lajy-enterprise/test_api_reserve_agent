@@ -1,4 +1,4 @@
-import axios from "axios";
+import { grillaHoraria } from "./mockup_grilla_horaria/mockup_grilla.ts";
 import { z } from "zod";
 import { tool } from "@langchain/core/tools";
 
@@ -34,6 +34,12 @@ export const consultDisponibilidad = tool(
     if (day.includes("Sun")) {
       return `No hay turnos disponibles para los dias domingo`;
     }
+
+    const hours = Object.keys(grillaHoraria);
+    if (!hours.includes(hour)) {
+      return "No es un horario válido, recuerda que estamos de 7 a 22 hs";
+    }
+
     try {
       const response = await fetch(
         "http://localhost:3000/reserve/getDisponibility",
