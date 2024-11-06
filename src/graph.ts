@@ -50,7 +50,6 @@ function checkCall(state: typeof StateAnnotation.State) {}
 const workflow = new StateGraph(StateAnnotation)
   .addNode("agent", callModel)
   .addNode("check_disponibilidad", toolNodeForGraph)
-
   .addNode("tools", toolNodeForGraph)
   .addEdge("__start__", "agent")
   .addConditionalEdges("agent", checkToolCall, [
@@ -58,7 +57,6 @@ const workflow = new StateGraph(StateAnnotation)
     "check_disponibilidad",
     "__end__",
   ])
-
   .addEdge("check_disponibilidad", "agent")
   .addEdge("tools", "agent");
 
