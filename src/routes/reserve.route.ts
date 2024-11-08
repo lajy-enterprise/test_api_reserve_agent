@@ -27,17 +27,19 @@ const getDisponibility = (req: Request, res: Response) => {
   }
 
   const reserveCollectionRef = firestoreDB.collection(activityQuery);
-
+  let collection;
   reserveCollectionRef
     .doc(date)
     .get()
     .then((doc) => {
       if (doc.exists) {
-        console.log(doc.data());
+        collection = doc.data();
       } else {
-        console.log("no existe");
+        collection = "no existe";
       }
     });
+
+  console.log("collection", collection);
 
   reserveCollectionRef
     .doc(date)
