@@ -32,7 +32,7 @@ const getDisponibility = (req: Request, res: Response) => {
     .get()
     .then((doc) => {
       if (!doc.exists) {
-        return res.status(500).send({
+        return res.status(200).send({
           message:
             "Hay turnos disponibles para " + activityQuery + " el día " + day,
         });
