@@ -11,7 +11,7 @@ lerna-debug.log*
 .pnpm-debug.log*
 
 # Caches
-
+test.ts
 .cache
 src/FirebaseDB/agentar-da00f-firebase-adminsdk-75npg-a1016f6b4d.json
 

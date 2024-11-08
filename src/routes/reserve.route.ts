@@ -27,19 +27,6 @@ const getDisponibility = (req: Request, res: Response) => {
   }
 
   const reserveCollectionRef = firestoreDB.collection(activityQuery);
-  let collection;
-  reserveCollectionRef
-    .doc(date)
-    .get()
-    .then((doc) => {
-      if (doc.exists) {
-        collection = doc.data();
-      } else {
-        collection = "no existe";
-      }
-    });
-
-  console.log("collection", collection);
 
   reserveCollectionRef
     .doc(date)
@@ -54,7 +41,7 @@ const getDisponibility = (req: Request, res: Response) => {
         const grilla = doc.data();
         if (grilla && grilla[hour]) {
           if (grilla[hour].length < 16) {
-            return res.send({
+            return res.status(200).send({
               message:
                 "Hay turnos disponibles para " +
                 activityQuery +
@@ -62,7 +49,7 @@ const getDisponibility = (req: Request, res: Response) => {
                 day,
             });
           } else {
-            return res.send({
+            return res.status(200).send({
               message:
                 "No hay mas cupos disponibles para " +
                 activityQuery +
@@ -75,6 +62,10 @@ const getDisponibility = (req: Request, res: Response) => {
             message: "Ha ocurrido un error al consultar la disponibilidad",
           });
         }
+      } else {
+        return res.status(500).send({
+          message: "Ha ocurrido un error inesperado",
+        });
       }
     });
 };
