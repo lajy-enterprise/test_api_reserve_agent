@@ -1,4 +1,5 @@
 import { grillaHoraria } from "./mockup_grilla_horaria/mockup_grilla.ts";
+import { BASE_URL } from "./server.ts";
 import { z } from "zod";
 import { tool } from "@langchain/core/tools";
 
@@ -42,7 +43,7 @@ export const consultDisponibilidad = tool(
 
     try {
       const response = await fetch(
-        "http://localhost:3000/reserve/getDisponibility",
+        `${BASE_URL}/reserve/consultDisponibilidad`,
         {
           method: "POST",
           headers: {
@@ -88,7 +89,7 @@ export const addReserveTurnTool = tool(
     console.log("addReserveTurnTool, la confirmacion es: ", confirm);
     if (!confirm) return { message: "Reserva cancelado por el usuario" };
     try {
-      const response = await fetch("http://localhost:3000/reserve/addReserve", {
+      const response = await fetch(`${BASE_URL}/reserve/addReserve`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
