@@ -15,6 +15,9 @@ const getDisponibility = (req: Request, res: Response) => {
   }: { day: string; activityQuery: string; hour: string } = req.body;
   const dateFormat = dayjs(day);
   const date = dateFormat.toDate().toDateString();
+  console.log("date de getDisponibility", date);
+  console.log("ac de getDisponibility", activityQuery);
+  console.log("hour de getDisponibility", hour);
 
   if (date.includes("Sun")) {
     res

@@ -14,7 +14,7 @@ export const BASE_URL = "https://api-reserve-agent.onrender.com";
 const serverExpress = express();
 serverExpress.use(
   cors({
-    origin: "*",
+    origin: "https://client-agent-reserve.onrender.com/",
     exposedHeaders: ["thread_id"],
   })
 );
