@@ -27,6 +27,18 @@ const getDisponibility = (req: Request, res: Response) => {
   }
 
   const reserveCollectionRef = firestoreDB.collection(activityQuery);
+
+  reserveCollectionRef
+    .doc(date)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        console.log(doc.data());
+      } else {
+        console.log("no existe");
+      }
+    });
+
   reserveCollectionRef
     .doc(date)
     .get()
