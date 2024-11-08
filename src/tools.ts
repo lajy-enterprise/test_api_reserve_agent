@@ -27,6 +27,7 @@ export const consultDisponibilidad = tool(
       const actiQuerySplitter = activityQuery.toLowerCase().replace(/\s+/g, "");
       return actiSplitter === actiQuerySplitter;
     });
+    console.log(day, activityQuery, hour);
 
     if (!activityFound) {
       return "La actividad ingresada no es válida, por favor ingrese una actividad válida como crossfit, full body, functional, fit box, woman strong, high intensity";
@@ -55,6 +56,8 @@ export const consultDisponibilidad = tool(
       });
 
       const res = await response.json();
+      console.log("res.message de la consulta dispo: ", res.message);
+
       return { message: res.message };
     } catch (error) {
       return { message: error };

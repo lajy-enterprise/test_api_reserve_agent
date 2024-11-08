@@ -25,6 +25,8 @@ serverExpress.use("/reserve", reserveRouter);
 
 serverExpress.post("/event", async (req, res) => {
   const { message, threadId } = req.body;
+  console.log("/event", message, threadId);
+
   const headers = {
     "Content-Type": "text/event-stream",
     Connection: "keep-alive",
@@ -67,6 +69,7 @@ serverExpress.post("/event", async (req, res) => {
       config
     )) {
       const recentMsg = event.messages[event.messages.length - 1];
+      console.log("/event_continue_stream", recentMsg);
 
       if (recentMsg._getType() === "ai") {
         if (recentMsg.tool_calls[0]?.name === "addReserveTurn") {
