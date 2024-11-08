@@ -42,20 +42,17 @@ export const consultDisponibilidad = tool(
     }
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/reserve/consultDisponibilidad`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            day,
-            activityQuery: activityFound,
-            hour,
-          }),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/reserve/getDisponibility`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          day,
+          activityQuery: activityFound,
+          hour,
+        }),
+      });
 
       const res = await response.json();
       return { message: res.message };
