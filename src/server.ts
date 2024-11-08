@@ -9,6 +9,7 @@ import { app } from "./graph";
 import { HumanMessage } from "@langchain/core/messages";
 
 const PORT = process.env.PORT || 3000;
+export const BASE_URL = "https://api-reserve-agent.onrender.com";
 
 const serverExpress = express();
 serverExpress.use(
