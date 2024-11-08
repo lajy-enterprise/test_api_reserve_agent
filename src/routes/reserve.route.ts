@@ -61,8 +61,6 @@ const getDisponibility = (req: Request, res: Response) => {
             message: "Ha ocurrido un error al consultar la disponibilidad",
           });
         }
-      } else {
-        return res.send({ message: "Error desconocido" });
       }
     });
 };
