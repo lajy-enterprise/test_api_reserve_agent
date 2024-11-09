@@ -30,48 +30,45 @@ const getDisponibility = (req: Request, res: Response) => {
 
   const reserveCollectionRef = firestoreDB.collection(activityQuery);
 
-  console.log("reserveCollectionRef", reserveCollectionRef);
+  // console.log("reserveCollectionRef", reserveCollectionRef);
 
-  reserveCollectionRef
-    .doc(newDate)
-    .get()
-    .then((doc) => {
-      if (!doc.exists) {
-        return res.status(200).send({
-          message:
-            "Hay turnos disponibles para " + activityQuery + " el día " + day,
-        });
-      } else if (doc.exists) {
-        const grilla = doc.data();
-        if (grilla && grilla[hour]) {
-          if (grilla[hour].length < 16) {
-            return res.status(200).send({
-              message:
-                "Hay turnos disponibles para " +
-                activityQuery +
-                " el día " +
-                day,
-            });
-          } else {
-            return res.status(200).send({
-              message:
-                "No hay mas cupos disponibles para " +
-                activityQuery +
-                " el día " +
-                day,
-            });
-          }
+  const docref = reserveCollectionRef.doc("/" + newDate);
+  docref.get().then((doc) => {
+    if (!doc.exists) {
+      console.log(doc);
+
+      return res.status(200).send({
+        message:
+          "Hay turnos disponibles para " + activityQuery + " el día " + day,
+      });
+    } else if (doc.exists) {
+      const grilla = doc.data();
+      if (grilla && grilla[hour]) {
+        if (grilla[hour].length < 16) {
+          return res.status(200).send({
+            message:
+              "Hay turnos disponibles para " + activityQuery + " el día " + day,
+          });
         } else {
-          return res.status(500).send({
-            message: "Ha ocurrido un error al consultar la disponibilidad",
+          return res.status(200).send({
+            message:
+              "No hay mas cupos disponibles para " +
+              activityQuery +
+              " el día " +
+              day,
           });
         }
       } else {
         return res.status(500).send({
-          message: "Ha ocurrido un error inesperado",
+          message: "Ha ocurrido un error al consultar la disponibilidad",
         });
       }
-    });
+    } else {
+      return res.status(500).send({
+        message: "Ha ocurrido un error inesperado",
+      });
+    }
+  });
 };
 
 // Ruta para agregar reserva por usuarioId , dia y hora
