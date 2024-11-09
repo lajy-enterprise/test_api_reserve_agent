@@ -15,6 +15,8 @@ const getDisponibility = (req: Request, res: Response) => {
   }: { day: string; activityQuery: string; hour: string } = req.body;
   const dateFormat = dayjs(day);
   const date = dateFormat.toDate().toDateString();
+  const newDate = date.replaceAll(" ", "-");
+
   console.log("date de getDisponibility", date);
   console.log("ac de getDisponibility", activityQuery);
   console.log("hour de getDisponibility", hour);
@@ -28,8 +30,10 @@ const getDisponibility = (req: Request, res: Response) => {
 
   const reserveCollectionRef = firestoreDB.collection(activityQuery);
 
+  console.log("reserveCollectionRef", reserveCollectionRef);
+
   reserveCollectionRef
-    .doc(date)
+    .doc(newDate)
     .get()
     .then((doc) => {
       if (!doc.exists) {
@@ -76,9 +80,10 @@ const AddReserve = (req: Request, res: Response) => {
   const { userId, day, hour, activity } = req.body;
   const dateFormat = dayjs(day);
   const date = dateFormat.toDate().toDateString();
+  const newDate = date.replaceAll(" ", "-");
   const reserveCollectionRef = firestoreDB.collection(activity);
   reserveCollectionRef
-    .doc(date)
+    .doc(newDate)
     .get()
     .then((doc) => {
       if (!doc.exists) {

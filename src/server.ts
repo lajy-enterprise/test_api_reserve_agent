@@ -9,12 +9,13 @@ import { app } from "./graph";
 import { HumanMessage } from "@langchain/core/messages";
 
 const PORT = process.env.PORT || 3000;
-export const BASE_URL = "https://api-reserve-agent.onrender.com";
+export const BASE_URL = "https://localhost:3000";
+const url_production = "https://api-reserve-agent.onrender.com";
+const url_frontend = "https://client-agent-reserve.onrender.com";
 
 const serverExpress = express();
 serverExpress.use(
   cors({
-    origin: "https://client-agent-reserve.onrender.com",
     exposedHeaders: ["thread_id"],
   })
 );
