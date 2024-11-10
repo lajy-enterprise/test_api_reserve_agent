@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 
 export const reserveRouter = Router();
 
-// Ruta para obtener dispinibilidad
+// Ruta para obtener disponibilidad
 const getDisponibility = (req: Request, res: Response) => {
   const {
     day,
@@ -16,10 +16,6 @@ const getDisponibility = (req: Request, res: Response) => {
   const dateFormat = dayjs(day);
   const date = dateFormat.toDate().toDateString();
   const newDate = date.replaceAll(" ", "-");
-
-  console.log("date de getDisponibility", date);
-  console.log("ac de getDisponibility", activityQuery);
-  console.log("hour de getDisponibility", hour);
 
   if (date.includes("Sun")) {
     res
