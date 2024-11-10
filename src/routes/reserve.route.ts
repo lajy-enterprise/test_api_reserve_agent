@@ -17,10 +17,6 @@ const getDisponibility = (req: Request, res: Response) => {
   const date = dateFormat.toDate().toDateString();
   const newDate = date.replaceAll(" ", "-");
 
-  console.log("date de getDisponibility", date);
-  console.log("ac de getDisponibility", activityQuery);
-  console.log("hour de getDisponibility", hour);
-
   if (date.includes("Sun")) {
     res
       .status(500)
@@ -35,8 +31,6 @@ const getDisponibility = (req: Request, res: Response) => {
   const docref = reserveCollectionRef.doc("/" + newDate);
   docref.get().then((doc) => {
     if (!doc.exists) {
-      console.log(doc);
-
       return res.status(200).send({
         message:
           "Hay turnos disponibles para " + activityQuery + " el día " + day,

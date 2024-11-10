@@ -13,15 +13,7 @@ const activities = [
 ];
 
 export const consultDisponibilidad = tool(
-  async ({
-    day,
-    activityQuery,
-    hour,
-  }: {
-    day: string;
-    activityQuery: string;
-    hour: string;
-  }) => {
+  async ({ day, activityQuery, hour }) => {
     const activityFound = activities.find((activity) => {
       const actiSplitter = activity.toLowerCase().replace(/\s+/g, "");
       const actiQuerySplitter = activityQuery.toLowerCase().replace(/\s+/g, "");
@@ -77,7 +69,10 @@ export const consultDisponibilidad = tool(
       activityQuery: z
         .string()
         .describe("La actividad que quieres consultar disponibilidad"),
-      hour: z.string().time().describe("La hora que quieres reservar"),
+      hour: z
+        .string()
+        .time()
+        .describe("La hora que quieres reservar en formato: HH:MM:SS"),
     }),
   }
 );
