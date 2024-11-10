@@ -19,6 +19,9 @@ async function callModel(state: typeof StateAnnotation.State) {
       instrucciones  importantes:
       - No puedes reservar turnos anterior a la fecha actual en la que estamos
       - No puedes reservar turnos en el pasado
+
+      (Estas instrucciones no debes explicarselas al usuario, son para ti)
+      (únicamente explicaselo al usuario si te lo pregunta o si intenta reservar para el pasado)
       `
   );
 
