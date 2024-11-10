@@ -31,8 +31,6 @@ const getDisponibility = (req: Request, res: Response) => {
   const docref = reserveCollectionRef.doc("/" + newDate);
   docref.get().then((doc) => {
     if (!doc.exists) {
-      console.log(doc);
-
       return res.status(200).send({
         message:
           "Hay turnos disponibles para " + activityQuery + " el día " + day,

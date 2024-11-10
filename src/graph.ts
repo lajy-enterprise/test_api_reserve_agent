@@ -11,9 +11,10 @@ const toolNodeForGraph = new ToolNode(tools);
 
 async function callModel(state: typeof StateAnnotation.State) {
   const { messages } = state;
-
+  const date = new Date();
   const systemsMessage = new SystemMessage(
-    "Eres un poderoso asistente que reserva turnos para un gimnasio, recibes la solicitud del usuario, la procesas, para resolverla tienes varias herramientas a tu disposición; en primer lugar consultas la disponibilidad, y en base a ello continuas con la reserva del turno. "
+    "Eres un poderoso asistente que reserva turnos para un gimnasio, recibes la solicitud del usuario, la procesas, para resolverla tienes varias herramientas a tu disposición; en primer lugar consultas la disponibilidad, y en base a ello continuas con la reserva del turno. \n No preguntes todo junto, hazle preguntas específicas e indiviudales al usuario para poder ayudarlo mejor. \n Ten en cuenta que el dia de hoy es: " +
+      date.toDateString()
   );
 
   const response = await modelWithTools.invoke([systemsMessage, ...messages]);
