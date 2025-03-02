@@ -1,17 +1,17 @@
-import { StateGraph } from "@langchain/langgraph";
-import StateAnnotation from "./state";
-import { modelWithTools } from "./model";
-import { MemorySaver } from "@langchain/langgraph";
-import { AIMessage, SystemMessage } from "@langchain/core/messages";
-import { consultDisponibilidad, addReserveTurnTool } from "./tools";
-import { ToolNode } from "@langchain/langgraph/prebuilt";
+import { StateGraph } from '@langchain/langgraph'
+import StateAnnotation from './state'
+import { modelWithTools } from './model'
+import { MemorySaver } from '@langchain/langgraph'
+import { AIMessage, SystemMessage } from '@langchain/core/messages'
+import { consultDisponibilidad, addReserveTurnTool } from './tools'
+import { ToolNode } from '@langchain/langgraph/prebuilt'
 
-const tools = [consultDisponibilidad, addReserveTurnTool];
-const toolNodeForGraph = new ToolNode(tools);
+const tools = [consultDisponibilidad, addReserveTurnTool]
+const toolNodeForGraph = new ToolNode(tools)
 
 async function callModel(state: typeof StateAnnotation.State) {
-  const { messages } = state;
-  const date = new Date();
+  const { messages } = state
+  const date = new Date()
   const systemsMessage = new SystemMessage(
     `Eres un poderoso asistente que reserva turnos para un gimnasio, recibes la solicitud del usuario, la procesas, para resolverla tienes varias herramientas a tu disposición; en primer lugar consultas la disponibilidad, y en base a ello continuas con la reserva del turno. \n No preguntes todo junto, hazle preguntas específicas e indiviudales al usuario para poder ayudarlo mejor. \n Ten en cuenta que el dia de hoy es: " +
       ${date.toDateString()}
@@ -22,34 +22,33 @@ async function callModel(state: typeof StateAnnotation.State) {
 
       (Estas instrucciones no debes explicarselas al usuario, son para ti)
       (únicamente explicaselo al usuario si te lo pregunta o si intenta reservar para el pasado)
-      `
-  );
+      `,
+  )
 
-  const response = await modelWithTools.invoke([systemsMessage, ...messages]);
+  const response = await modelWithTools.invoke([systemsMessage, ...messages])
 
   // We return a list, because this will get added to the existing list
-  return { messages: [response] };
+  return { messages: [response] }
 }
 
 // function callConsultaDisponibilidad
 
 function checkToolCall(state: typeof StateAnnotation.State) {
-  const { messages } = state;
+  const { messages } = state
 
-  const lastMessage = messages[messages.length - 1] as AIMessage;
+  const lastMessage = messages[messages.length - 1] as AIMessage
   // If the LLM makes a tool call, then we route to the "tools" node
   if (lastMessage?.tool_calls?.length) {
     if (
       lastMessage?.tool_calls.some(
-        (toolCall) => toolCall.name === "consulta_disponibilidad_de_turno"
+        toolCall => toolCall.name === 'consulta_disponibilidad_de_turno',
       )
     ) {
-      return "check_disponibilidad";
-    } else {
-      return "tools";
+      return 'check_disponibilidad'
     }
+    return 'tools'
   }
-  return "__end__";
+  return '__end__'
   // Otherwise, we stop (reply to the user)
 }
 
@@ -57,21 +56,21 @@ function checkCall(state: typeof StateAnnotation.State) {}
 // Otherwise, we stop (reply to the user)
 
 const workflow = new StateGraph(StateAnnotation)
-  .addNode("agent", callModel)
-  .addNode("check_disponibilidad", toolNodeForGraph)
-  .addNode("tools", toolNodeForGraph)
-  .addEdge("__start__", "agent")
-  .addConditionalEdges("agent", checkToolCall, [
-    "tools",
-    "check_disponibilidad",
-    "__end__",
+  .addNode('agent', callModel)
+  .addNode('check_disponibilidad', toolNodeForGraph)
+  .addNode('tools', toolNodeForGraph)
+  .addEdge('__start__', 'agent')
+  .addConditionalEdges('agent', checkToolCall, [
+    'tools',
+    'check_disponibilidad',
+    '__end__',
   ])
-  .addEdge("check_disponibilidad", "agent")
-  .addEdge("tools", "agent");
+  .addEdge('check_disponibilidad', 'agent')
+  .addEdge('tools', 'agent')
 
-const checkpointer = new MemorySaver();
+const checkpointer = new MemorySaver()
 
 export const app = workflow.compile({
   checkpointer,
-  interruptBefore: ["tools"],
-});
+  interruptBefore: ['tools'],
+})
