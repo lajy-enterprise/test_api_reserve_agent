@@ -1,29 +1,38 @@
+import 'reflect-metadata'
 import { DataSource } from 'typeorm'
-import * as dotenv from 'dotenv'
+import { Products } from './entity/products.entity'
 import { Accounts } from './entity/accounts.entity'
+import { Brands } from './entity/brands.entity'
+import { Categories } from './entity/categories.entity'
+import { Vendors } from './entity/vendors.entity'
+import { env } from '@/config'
 
-dotenv.config()
-
-export const dataSource = new DataSource({
-  type: 'mysql',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '3306'),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
+const dataSource = new DataSource({
+  type: env?.db_type || 'mysql',
+  host: env.db_host,
+  port: env.db_port || 3306,
+  username: env.db_username,
+  password: env.db_password,
+  database: env.db_database,
   synchronize: false, // ¡Recuerda, solo para desarrollo!
   logging: true,
-  entities: ['./entity/*.ts'],
+  entities: [Accounts, Brands, Categories, Vendors, Products],
 })
-// .initialize()
-// .then(async connection => {
+
+await dataSource.initialize()
+// .then(async app => {
 //   console.log('Conexión a la base de datos establecida')
-//   const accountOne = await app.manager.findOne(Accounts, 1)
-//   console.dir(accountOne)
+//   // const accountOne = await app.manager.findOneBy(Accounts, {
+//   //   id: 1,
+//   // })
+//   // console.dir(accountOne)
 // })
 // .catch(error => console.log('Error al conectar a la base de datos: ', error))
 
-const accountOne = await dataSource.manager.findOneBy(Accounts, {
-  id: 1,
-})
-console.dir(accountOne)
+// const accountRepository = dataSource.getRepository(Accounts)
+// const accountOne = await accountRepository.findOne({
+//   where: { id: 1 },
+// })
+//
+// console.dir(accountOne)
+export default dataSource

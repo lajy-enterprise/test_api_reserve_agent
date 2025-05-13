@@ -1,12 +1,11 @@
-import { addReserveTurnTool, consultDisponibilidad } from "./tools";
-import { ChatOpenAI } from "@langchain/openai";
+import { checkProducts } from './tools'
+import { ChatOpenAI } from '@langchain/openai'
+import { env } from '@/config'
 
-const tools = [addReserveTurnTool, consultDisponibilidad];
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const tools = [checkProducts]
 
 export const modelWithTools = new ChatOpenAI({
-  model: "gpt-4o",
-  openAIApiKey: OPENAI_API_KEY,
+  model: 'gpt-4o',
+  openAIApiKey: env.openai_api_key,
   temperature: 0.5,
-}).bindTools(tools);
+}).bindTools(tools)

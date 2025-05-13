@@ -1,117 +1,79 @@
-import express from "express";
-import { userRouter } from "./routes/user.route";
-import { reserveRouter } from "./routes/reserve.route";
-import bodyParser from "body-parser";
-import cors from "cors";
-import { v4 as uuidv4 } from "uuid";
+import express from 'express'
+import bodyParser from 'body-parser'
+import cors from 'cors'
+import { v4 as uuidv4 } from 'uuid'
+import { app } from './graph'
+import { HumanMessage } from '@langchain/core/messages'
+import { env } from '@/config'
+import dataSource from './database/database'
+import { Products } from './database/entity/products.entity'
+import { Like } from 'typeorm'
 
-import { app } from "./graph";
-import { HumanMessage } from "@langchain/core/messages";
+const PORT = env.port || 3000
 
-const PORT = process.env.PORT || 3000;
-export const BASE_URL = "https://apireserveagent-production.up.railway.app";
-const url_production = "https://api-reserve-agent.onrender.com";
-const url_frontend = "https://client-agent-reserve.onrender.com";
-
-const serverExpress = express();
+const serverExpress = express()
 serverExpress.use(
   cors({
-    exposedHeaders: ["thread_id"],
+    exposedHeaders: ['thread_id'],
+  }),
+)
+serverExpress.use(bodyParser.json())
+
+serverExpress.get('/', async (req, res) => {
+  const productRepository = dataSource.getRepository(Products)
+  const productOne = await productRepository.findOne({
+    where: { account: { name: Like('%comayagua%') } },
+    relations: ['account', 'brand', 'category', 'vendor'],
   })
-);
-serverExpress.use(bodyParser.json());
+  res.send(productOne)
+})
 
-serverExpress.use("/user", userRouter);
-serverExpress.use("/reserve", reserveRouter);
-
-serverExpress.post("/event", async (req, res) => {
-  const { message, threadId } = req.body;
-  console.log("/event", message, threadId);
+serverExpress.post('/bot', async (req, res) => {
+  const { message, threadId } = req.body
+  console.log('/event', message, threadId)
 
   const headers = {
-    "Content-Type": "text/event-stream",
-    Connection: "keep-alive",
-    "Cache-Control": "no-cache",
-  };
-  res.writeHead(200, headers);
+    'Content-Type': 'text/event-stream',
+    Connection: 'keep-alive',
+    'Cache-Control': 'no-cache',
+  }
+  res.writeHead(200, headers)
+  const thread_id = threadId || uuidv4()
   if (!threadId) {
-    const thread_id = uuidv4();
-    res.setHeader("thread_id", thread_id);
-    const config = {
-      configurable: { thread_id },
-      streamMode: "values" as const,
-    };
-
-    for await (const event of await app.stream(
-      {
-        messages: [new HumanMessage(message)],
-      },
-      config
-    )) {
-      const recentMsg = event.messages[event.messages.length - 1];
-
-      if (recentMsg._getType() === "ai") {
-        if (recentMsg.tool_calls[0]?.name === "addReserveTurn") {
-          res.write(JSON.stringify(recentMsg.tool_calls[0].args));
-        }
-        res.write(recentMsg.content);
-      }
-    }
-  } else {
-    const config = {
-      configurable: { thread_id: threadId },
-      streamMode: "values" as const,
-    };
-
-    for await (const event of await app.stream(
-      {
-        messages: [new HumanMessage(message)],
-      },
-      config
-    )) {
-      const recentMsg = event.messages[event.messages.length - 1];
-      console.log("/event_continue_stream", recentMsg);
-
-      if (recentMsg._getType() === "ai") {
-        if (recentMsg.tool_calls[0]?.name === "addReserveTurn") {
-          res.write(JSON.stringify(recentMsg.tool_calls[0].args));
-        }
-        res.write(recentMsg.content);
-      }
-    }
+    res.setHeader('thread_id', thread_id)
   }
-
-  res.end();
-  req.on("close", () => {
-    console.log(` Connection closed`);
-  });
-});
-
-serverExpress.post("/validate", async (req, res) => {
-  const { send, threadId } = req.body;
   const config = {
-    configurable: { thread_id: threadId },
-    streamMode: "values" as const,
-  };
-
-  await app.updateState(config, { confirm: send });
-
-  for await (const event of await app.stream(null, config)) {
-    const recentMsg = event.messages[event.messages.length - 1];
-
-    if (recentMsg._getType() === "ai") {
-      if (recentMsg.tool_calls[0]?.name === "addReserveTurn") {
-        recentMsg.tool_calls[0].args.confirm = send;
-      }
-      if (recentMsg.tool_calls.length === 0) {
-        res.write(recentMsg.content);
+    configurable: { thread_id },
+    streamMode: 'values' as const,
+  }
+  try {
+    res.write('probando')
+    for await (const event of await app.stream(
+      {
+        messages: [new HumanMessage(message)],
+      },
+      config,
+    )) {
+      const recentMsg = event.messages.at(-1)
+      console.dir(recentMsg.content)
+      if (recentMsg._getType() === 'ai') {
+        // if (recentMsg.tool_calls[0]?.name === 'check_products') {
+        //   res.write(JSON.stringify(recentMsg.tool_calls[0].args))
+        // }
+        res.json(recentMsg.content)
       }
     }
+  } catch (error) {
+    console.error('Error in event stream:', error)
+    res.json('Error in event stream')
+  } finally {
+    res.end()
+    req.on('close', () => {
+      console.log('Connection closed')
+    })
   }
-
-  res.end();
-});
+})
 
 serverExpress.listen(PORT, () => {
-  console.log(`Events listening at PORT: ${PORT}`);
-});
+  console.log(`Events listening at PORT: ${PORT}`)
+})

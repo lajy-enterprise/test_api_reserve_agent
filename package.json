@@ -26,6 +26,7 @@
     "@langchain/langgraph-sdk": "^0.0.16",
     "@langchain/openai": "^0.3.7",
     "@types/cors": "^2.8.17",
+    "@types/node": "^22.15.17",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
@@ -36,6 +37,7 @@
     "git-filter-repo": "^0.0.30",
     "mysql2": "^3.12.0",
     "paymanai": "^1.0.0",
+    "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.20",
     "uuid": "^10.0.0",
     "zod": "^3.23.8"
