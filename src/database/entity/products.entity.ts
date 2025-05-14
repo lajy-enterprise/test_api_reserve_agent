@@ -10,6 +10,7 @@ import {
 import { Accounts } from './accounts.entity'
 import { Brands } from './brands.entity'
 import { Categories } from './categories.entity'
+import { SubCategories } from './sub_categories.entity'
 import { Vendors } from './vendors.entity'
 
 @Entity()
@@ -28,6 +29,10 @@ export class Products {
   @ManyToOne(() => Categories)
   @JoinColumn({ name: 'category_id' })
   category!: Categories
+
+  @ManyToOne(() => SubCategories, { nullable: true })
+  @JoinColumn({ name: 'sub_category_id' })
+  subCategory!: SubCategories | null
 
   @ManyToOne(() => Vendors)
   @JoinColumn({ name: 'vendor_id' })

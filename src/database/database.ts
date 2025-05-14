@@ -5,6 +5,7 @@ import { Accounts } from './entity/accounts.entity'
 import { Brands } from './entity/brands.entity'
 import { Categories } from './entity/categories.entity'
 import { Vendors } from './entity/vendors.entity'
+import { SubCategories } from './entity/sub_categories.entity'
 import { env } from '@/config'
 
 const dataSource = new DataSource({
@@ -16,7 +17,7 @@ const dataSource = new DataSource({
   database: env.db_database,
   synchronize: false, // ¡Recuerda, solo para desarrollo!
   logging: true,
-  entities: [Accounts, Brands, Categories, Vendors, Products],
+  entities: [Accounts, Brands, Categories, SubCategories, Vendors, Products],
 })
 
 await dataSource.initialize()
