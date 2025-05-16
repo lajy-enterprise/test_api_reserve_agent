@@ -29,7 +29,7 @@ serverExpress.get('/', async (req, res) => {
 })
 
 serverExpress.post('/bot', async (req, res) => {
-  const { message, threadId } = req.body
+  const { message, threadId, responseUrl } = req.body
   // console.log('/bot', message, threadId)
 
   // const headers = {
@@ -46,6 +46,7 @@ serverExpress.post('/bot', async (req, res) => {
     configurable: { thread_id },
     streamMode: 'values' as const,
   }
+  let returnMessage = ''
   try {
     for await (const event of await app.stream(
       {
@@ -59,7 +60,9 @@ serverExpress.post('/bot', async (req, res) => {
         // if (recentMsg.tool_calls[0]?.name === 'check_products') {
         //   res.write(JSON.stringify(recentMsg.tool_calls[0].args))
         // }
-        res.write(recentMsg.content)
+        // res.write(recentMsg.content)
+        console.dir(recentMsg.content)
+        returnMessage = recentMsg.content
       }
     }
   } catch (error) {
@@ -70,9 +73,25 @@ serverExpress.post('/bot', async (req, res) => {
     req.on('close', () => {
       console.log('Connection closed')
     })
+    await reponceMessage(responseUrl, returnMessage)
   }
 })
 
 serverExpress.listen(PORT, () => {
   console.log(`Events listening at PORT: ${PORT}`)
 })
+
+async function reponceMessage(
+  responseUrl: string,
+  message: string,
+): Promise<void> {
+  await fetch(`${responseUrl}/reserve/getDisponibility`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message,
+    }),
+  })
+}
